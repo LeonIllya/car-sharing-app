@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: insert-roles-in-table
+      author: LeonIlya
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: user_role
+                  value: 'MANAGER'
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: user_role
+                  value: 'CUSTOMER'
