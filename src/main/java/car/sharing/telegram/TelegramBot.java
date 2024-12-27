@@ -2,9 +2,9 @@ package car.sharing.telegram;
 
 import car.sharing.config.BotConfig;
 import car.sharing.dto.user.UserLoginRequestDto;
+import car.sharing.exception.NotificationException;
 import car.sharing.repository.user.UserRepository;
 import car.sharing.security.AuthenticationService;
-import car.sharing.exception.NotificationException;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +103,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             sendMessage.setChatId(chatId);
         } else if (text.startsWith("/start")) {
             sendMessage.setText("Welcome! This bot will send you updates about bookings\n"
-                + "Type '/login' to continue");
+                    + "Type '/login' to continue");
             sendMessage.setChatId(chatId);
         } else if (text.startsWith("/login")) {
             sendMessage.setText("Press me!");
@@ -135,7 +135,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         new UserLoginRequestDto(params.get(0), params.get(1));
                 try {
                     authenticationService.authenticateWithTelegram(
-                        requestDto, Long.valueOf(chatId)
+                            requestDto, Long.valueOf(chatId)
                     );
                     sendMessage.setText("Success!");
                     sendMessage.setChatId(chatId);

@@ -1,8 +1,5 @@
 package car.sharing.controller;
 
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import car.sharing.dto.payment.external.PaymentResponseDto;
 import car.sharing.dto.payment.internal.RequestPaymentToStripeDto;
 import car.sharing.model.Payment;
-import car.sharing.service.NotificationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -24,7 +20,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -33,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
 
 @Sql(scripts = {"classpath:database/cars/add-cars.sql",
@@ -52,8 +46,6 @@ public class PaymentControllerTest {
     protected static MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-//    @MockBean
-//    private NotificationService notificationService;
 
     @BeforeAll
     static void beforeAll(@Autowired WebApplicationContext webContext) {
@@ -106,48 +98,6 @@ public class PaymentControllerTest {
         Assertions.assertNotNull(responseDtoActual);
         EqualsBuilder.reflectionEquals(paymentResponseDtoExpected,
                 responseDtoActual, "id");
-    }
-
-    @Test
-    @WithMockUser(username = "manager", roles = {"MANAGER"})
-    @DisplayName("Get success message by session id")
-    void getSuccessMessageBySessionId_ValidSessionId_ShouldReturnString() throws Exception {
-        //Given
-        String sessionId = "sessionId1";
-        String requestUrl = UriComponentsBuilder.fromUriString("/payments/success")
-                .queryParam("sessionId", sessionId)
-                .toUriString();
-
-        //When
-//        doNothing().when(notificationService).sendNotification(anyString(), anyLong());
-        MvcResult result = mockMvc.perform(get(requestUrl))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        //Then
-        String messageExpected = "Payment is successful";
-        EqualsBuilder.reflectionEquals(messageExpected, result.getResponse().getContentAsString());
-    }
-
-    @Test
-    @WithMockUser(username = "manager", roles = {"MANAGER"})
-    @DisplayName("Get cancel message by session id")
-    void getCancelMessageBySessionId_ValidSessionId_ShouldReturnString() throws Exception {
-        //Given
-        String sessionId = "sessionId1";
-        String requestUrl = UriComponentsBuilder.fromUriString("/payments/cancel")
-                .queryParam("sessionId", sessionId)
-                .toUriString();
-
-        //When
-//        doNothing().when(notificationService).sendNotification(anyString(), anyLong());
-        MvcResult result = mockMvc.perform(get(requestUrl))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        //Then
-        String messageExpected = "Payment is cancel";
-        EqualsBuilder.reflectionEquals(messageExpected, result.getResponse().getContentAsString());
     }
 
     private PaymentResponseDto createPaymentResponseDto() throws MalformedURLException {

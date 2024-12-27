@@ -38,13 +38,13 @@ databaseChangeLog:
                   name: telegram_id
                   type: bigint
               - column:
-                  name: role
+                  name: roles
                   type: enum('manager','customer')
                   constraints:
                     nullable: false
               - column:
                   name: is_deleted
                   type: boolean
-                  defaultValueBoolean: false
+                  defaultValue: false
                   constraints:
                     nullable: false

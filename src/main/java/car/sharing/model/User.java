@@ -41,6 +41,7 @@ public class User implements UserDetails {
     private String lastName;
     @Column(nullable = false)
     private String password;
+    @Column(name = "telegram_id")
     private Long telegramId;
     @ManyToMany
     @Fetch(FetchMode.JOIN)

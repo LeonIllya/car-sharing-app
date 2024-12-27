@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class RentalController {
     private final RentalService rentalService;
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('CUSTOMER')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     @Operation(summary = "Create new rental by user",

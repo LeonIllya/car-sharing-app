@@ -72,7 +72,7 @@ public class PaymentServiceImpl implements PaymentService {
         paymentRepository.save(payment);
         if (user.getTelegramId() != null) {
             notificationService.sendNotification("Payment with session id {} "
-                + " is successful." + sessionId, user.getTelegramId());
+                    + " is successful." + sessionId, user.getTelegramId());
         }
         log.info("Payment with session id {} is successful.", sessionId);
     }
@@ -87,7 +87,7 @@ public class PaymentServiceImpl implements PaymentService {
         paymentRepository.save(payment);
         if (user.getTelegramId() != null) {
             notificationService.sendNotification("Payment with session id {} "
-                + " is canceled." + sessionId, user.getTelegramId());
+                    + " is canceled." + sessionId, user.getTelegramId());
         }
         log.info("Payment with session id {} is canceled.", sessionId);
     }
