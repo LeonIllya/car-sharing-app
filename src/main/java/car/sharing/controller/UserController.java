@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "User management", description = "Endpoints for managing users "
-    + "authentication and profiles")
+        + "authentication and profiles")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
@@ -40,14 +40,12 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('CUSTOMER')")
     @Operation(summary = "Get profile", description = "Get user profile info")
     public UserResponseDto getUserInfo(Authentication authentication) {
         return userService.getUserInfo(getUser(authentication));
     }
 
     @PutMapping("/me")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('CUSTOMER')")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update user info", description = "Update user profile info")
     public UserResponseDto updateUserInfo(@RequestBody @Valid UserRequestDto requestDto,

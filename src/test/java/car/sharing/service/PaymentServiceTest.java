@@ -44,8 +44,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class PaymentServiceTest {
     private static final int DEFAULT_CAR_INVENTORY = 100;
     private static final String DEFAULT_SESSION_ID = "sessionId";
-    private static final String DEFAULT_MESSAGE = "Payment with session id {} "
-            + " is successful." + DEFAULT_SESSION_ID;
 
     @Mock
     private PaymentRepository paymentRepository;
@@ -228,7 +226,7 @@ public class PaymentServiceTest {
     public void canselPayment_ValidSessionIdAndUserId_Success() {
         //Given
         when(paymentRepository.findBySessionId(DEFAULT_SESSION_ID))
-            .thenReturn(Optional.of(payment));
+                .thenReturn(Optional.of(payment));
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(paymentRepository.save(payment)).thenReturn(payment);
