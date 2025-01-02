@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class BrandSpecificationProvider implements SpecificationProvider<Car> {
-    private static final String BRAND_SPECIFICATION = "brand";
+    public static final String BRAND_SPECIFICATION = "brand";
 
     @Override
     public String getKey() {

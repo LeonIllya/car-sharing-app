@@ -10,7 +10,7 @@ public interface RentalService {
 
     List<RentalResponseDto> search(RentalSearchParametersDto search);
 
-    RentalResponseDto getRentalById(Long rentalId);
+    RentalResponseDto getRental(Long rentalId);
 
     RentalResponseDto actualReturnDate(Long rentalId);
 }

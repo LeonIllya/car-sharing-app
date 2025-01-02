@@ -15,9 +15,11 @@ import car.sharing.mapper.RentalMapper;
 import car.sharing.mapper.impl.RentalMapperImpl;
 import car.sharing.model.Car;
 import car.sharing.model.Rental;
+import car.sharing.model.User;
 import car.sharing.repository.car.CarRepository;
 import car.sharing.repository.rental.RentalRepository;
 import car.sharing.repository.rental.RentalSpecificationBuilder;
+import car.sharing.repository.user.UserRepository;
 import car.sharing.service.impl.RentalServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,6 +43,8 @@ public class RentalServiceTest {
     private static final boolean RENTAL_IS_FINISHED = false;
     @Mock
     private RentalRepository rentalRepository;
+    @Mock
+    private UserRepository userRepository;
     @Spy
     private RentalMapper rentalMapper = new RentalMapperImpl();
     @Mock
@@ -50,12 +54,19 @@ public class RentalServiceTest {
     @InjectMocks
     private RentalServiceImpl rentalService;
 
+    private User user;
     private Car car;
     private RentalRequestDto requestDto;
     private Rental rental;
 
     @BeforeEach
     void setUp() {
+        user = new User();
+        user.setId(1L);
+        user.setEmail("admin1@gmail.com");
+        user.setFirstName("Danil");
+        user.setLastName("Zinchenko");
+
         car = new Car();
         car.setId(1L);
         car.setModel("S-Class");
@@ -72,8 +83,8 @@ public class RentalServiceTest {
         rental.setRentalDate(requestDto.rentalDate());
         rental.setReturnDate(requestDto.returnDate());
         rental.setActualReturnDate(null);
-        rental.setCarId(requestDto.carId());
-        rental.setUserId(1L);
+        rental.setCar(car);
+        rental.setUser(user);
     }
 
     @Test
@@ -84,10 +95,11 @@ public class RentalServiceTest {
         when(rentalRepository.save(rental)).thenReturn(rental);
         when(carRepository.save(car)).thenReturn(car);
         when(carRepository.findById(1L)).thenReturn(Optional.of(car));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // When
         RentalResponseDto responseDtoExpected = createRentalDto(rental);
-        RentalResponseDto rentalActual = rentalService.createRental(requestDto, 100L);
+        RentalResponseDto rentalActual = rentalService.createRental(requestDto, 1L);
 
         // Then
         Assertions.assertEquals(responseDtoExpected, rentalActual);
@@ -160,7 +172,7 @@ public class RentalServiceTest {
         when(rentalMapper.toDto(rental)).thenReturn(rentalDto);
 
         // When
-        RentalResponseDto rentalByIdExpected = rentalService.getRentalById(1L);
+        RentalResponseDto rentalByIdExpected = rentalService.getRental(1L);
 
         // Then
         Assertions.assertEquals(rentalDto, rentalByIdExpected);
@@ -178,7 +190,7 @@ public class RentalServiceTest {
         //When
         EntityNotFoundException exception = Assertions.assertThrows(
                 EntityNotFoundException.class,
-                () -> rentalService.getRentalById(rentalId)
+                () -> rentalService.getRental(rentalId)
         );
 
         //Then
@@ -196,7 +208,6 @@ public class RentalServiceTest {
         car.setInventory(CAR_INVENTORY_EXPECT);
 
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
-        when(carRepository.findById(1L)).thenReturn(Optional.of(car));
         when(carRepository.save(car)).thenReturn(car);
         when(rentalRepository.save(rental)).thenReturn(rental);
 
@@ -237,13 +248,13 @@ public class RentalServiceTest {
         rental.setRentalDate(LocalDate.now().plusDays(2));
         rental.setReturnDate(LocalDate.now().plusDays(6));
         rental.setActualReturnDate(LocalDate.now().plusDays(8));
-        rental.setCarId(1L);
-        rental.setUserId(2L);
+        rental.setCar(car);
+        rental.setUser(user);
         return rental;
     }
 
     private RentalResponseDto createRentalDto(Rental rental) {
         return new RentalResponseDto(rental.getId(), rental.getRentalDate(),
-            rental.getReturnDate(), rental.getActualReturnDate(), rental.getCarId());
+            rental.getReturnDate(), rental.getActualReturnDate(), car.getId());
     }
 }

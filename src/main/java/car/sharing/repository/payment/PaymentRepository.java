@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    @Query("SELECT p FROM Payment p WHERE p.rentalId IN :rentalIds")
+    @Query("SELECT p FROM Payment p JOIN p.rental r WHERE r.id IN :rentalIds")
     List<Payment> findAllByRentalsId(@Param("rentalIds") List<Long> rentalIds);
 
     Optional<Payment> findBySessionId(String sessionId);

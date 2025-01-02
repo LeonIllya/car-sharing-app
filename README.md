@@ -13,17 +13,17 @@ stack that will provide high stability, scalability and security.
 A brief overview of the technologies underlying the CarSharing:
 
 - **Java:** 17 version
-- **Spring Boot:** Simplifies the development and deployment process.
-- **Spring Security:** Provides comprehensive security for your application.
-- **Spring Data JPA:** Manages and accesses data with ease.
-- **MapStruct:** Automates the mapping of Java beans.
-- **Swagger:** Enhances API documentation and testing.
-- **MySQL:** Reliable relational database management system.
-- **Liquibase:** Manages database schema changes.
-- **Docker:** Streamlines development and deployment in isolated environments.
-- **Docker Testcontainers:** Facilitates integration testing with a MySQL container.
-- **Telegram Bots API:** - Integrated bot for sending notifications about rentals.
-- **Stripe API:** - Integrated service for creating and processing online payments.
+- **Spring Boot:** Simplifies the development and deployment process. Version - 3.3.5.
+- **Spring Security:** Provides comprehensive security for your application. Version - 3.3.5.
+- **Spring Data JPA:** Manages and accesses data with ease. Version - 3.3.5.
+- **MapStruct:** Automates the mapping of Java beans. Version - 1.5.5.Final.
+- **Swagger:** Enhances API documentation and testing. Version - 1.6.14.
+- **MySQL:** Reliable relational database management system. Version - 8.0.33.
+- **Liquibase:** Manages database schema changes. Version - 4.27.0.
+- **Docker:** Streamlines development and deployment in isolated environments. Version - 27.3.1
+- **Docker Testcontainers:** Facilitates integration testing with a MySQL container. Version - 1.18.0
+- **Telegram Bots API:** - Integrated bot for sending notifications about rentals. Version - 6.0.1.
+- **Stripe API:** - Integrated service for creating and processing online payments. Version - 28.0.1.
 ___
 ## How to Run the Project
 ___
@@ -120,7 +120,7 @@ and a thoughtful approach. Thanks to my systematic approach and professional
 skills, I was able to successfully overcome these challenges and create 
 a reliable and functional platform.
 
-## 🌟 Possible improvements
+## 🌟 Feature Roadmap
 
 - Enhanced User Experience: Optimize the interface for a seamless booking 
 process and improve navigation for better usability.

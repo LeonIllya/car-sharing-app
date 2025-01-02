@@ -46,7 +46,7 @@ public class RentalController {
     @Operation(summary = "Get rental by id",
             description = "Get rental by id")
     public RentalResponseDto getRentalById(@PathVariable @Positive Long id) {
-        return rentalService.getRentalById(id);
+        return rentalService.getRental(id);
     }
 
     @PreAuthorize("hasRole('MANAGER')")

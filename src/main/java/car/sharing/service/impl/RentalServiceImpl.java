@@ -7,9 +7,11 @@ import car.sharing.exception.EntityNotFoundException;
 import car.sharing.mapper.RentalMapper;
 import car.sharing.model.Car;
 import car.sharing.model.Rental;
+import car.sharing.model.User;
 import car.sharing.repository.car.CarRepository;
 import car.sharing.repository.rental.RentalRepository;
 import car.sharing.repository.rental.RentalSpecificationBuilder;
+import car.sharing.repository.user.UserRepository;
 import car.sharing.service.RentalService;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,18 +26,19 @@ public class RentalServiceImpl implements RentalService {
     private final RentalRepository rentalRepository;
     private final RentalMapper rentalMapper;
     private final CarRepository carRepository;
+    private final UserRepository userRepository;
     private final RentalSpecificationBuilder specificationBuilder;
 
     @Override
     @Transactional
     public RentalResponseDto createRental(RentalRequestDto requestDto, Long userId) {
         Rental rental = rentalMapper.toModel(requestDto);
-        rental.setUserId(userId);
-        rentalRepository.save(rental);
-
-        Car car = getCar(rental.getCarId());
+        rental.setUser(getUserById(userId));
+        Car car = getCarById(requestDto.carId());
         car.setInventory(car.getInventory() - 1);
+        rental.setCar(car);
         carRepository.save(car);
+        rentalRepository.save(rental);
         return rentalMapper.toDto(rental);
     }
 
@@ -49,29 +52,35 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public RentalResponseDto getRentalById(Long rentalId) {
-        return rentalMapper.toDto(getRental(rentalId));
+    public RentalResponseDto getRental(Long rentalId) {
+        return rentalMapper.toDto(getRentalById(rentalId));
     }
 
     @Override
     public RentalResponseDto actualReturnDate(Long rentalId) {
-        Rental rental = getRental(rentalId);
+        Rental rental = getRentalById(rentalId);
         rental.setActualReturnDate(LocalDate.now());
         rental.setActive(false);
 
-        Car car = getCar(rental.getCarId());
+        Car car = rental.getCar();
         car.setInventory(car.getInventory() + 1);
         carRepository.save(car);
         return rentalMapper.toDto(rentalRepository.save(rental));
     }
 
-    private Rental getRental(Long id) {
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                    "Can`t find a user by id: " + userId));
+    }
+
+    private Rental getRentalById(Long id) {
         return rentalRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                     "Can`t find a rental by id: " + id));
     }
 
-    private Car getCar(Long carId) {
+    private Car getCarById(Long carId) {
         return carRepository.findById(carId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Can`t find a car by id: " + carId));

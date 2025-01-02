@@ -1,5 +1,8 @@
 package car.sharing.repository.car;
 
+import static car.sharing.repository.car.spec.BrandSpecificationProvider.BRAND_SPECIFICATION;
+import static car.sharing.repository.car.spec.CarFrameSpecificationProvider.CAR_FRAME_SPECIFICATION;
+
 import car.sharing.dto.car.CarSearchParametersDto;
 import car.sharing.model.Car;
 import car.sharing.repository.SpecificationBuilder;
@@ -11,8 +14,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class CarSpecificationBuilder implements SpecificationBuilder<Car, CarSearchParametersDto> {
-    private static final String BRAND_SPECIFICATION = "brand";
-    private static final String CAR_FRAME_SPECIFICATION = "carFrame";
     private final SpecificationProviderManager<Car> carSpecificationProviderManager;
 
     @Override

@@ -2,14 +2,20 @@ package car.sharing.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -29,10 +35,14 @@ public class Rental {
     @Column(name = "return_date", nullable = false)
     private LocalDate returnDate;
     private LocalDate actualReturnDate;
-    @Column(name = "car_id", nullable = false)
-    private Long carId;
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "car_id", nullable = false)
+    @Fetch(FetchMode.JOIN)
+    private Car car;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @Fetch(FetchMode.JOIN)
+    private User user;
     @Column(nullable = false, columnDefinition = "TINYINT")
     private boolean isActive = true;
     @Column(nullable = false, columnDefinition = "TINYINT")
