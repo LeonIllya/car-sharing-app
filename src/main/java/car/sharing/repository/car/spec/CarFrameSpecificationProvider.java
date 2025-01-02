@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CarFrameSpecificationProvider implements SpecificationProvider<Car> {
-    private static final String CAR_FRAME_SPECIFICATION = "carFrame";
+    public static final String CAR_FRAME_SPECIFICATION = "carFrame";
 
     @Override
     public String getKey() {

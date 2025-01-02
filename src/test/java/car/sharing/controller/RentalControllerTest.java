@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,11 +25,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Sql(scripts = {"classpath:database/cars/add-cars.sql",
+@Sql(scripts = {
+        "classpath:database/cars/add-cars.sql",
         "classpath:database/users/add-users.sql",
         "classpath:database/rentals/add-rentals.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = {"classpath:database/cars/remove-cars.sql",
+@Sql(scripts = {
+        "classpath:database/cars/remove-cars.sql",
         "classpath:database/users/remove-users.sql",
         "classpath:database/rentals/remove-rentals.sql"},
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -73,7 +74,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "manager", roles = {"MANAGER"})
+    @WithUserDetails("messi@gmail.com")
     @DisplayName("Get a rental by id")
     void getRentalById_ValidRentalId_ShouldReturnRentalResponseDto() throws Exception {
         //Given
@@ -98,7 +99,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "manager", roles = {"MANAGER"})
+    @WithUserDetails("messi@gmail.com")
     @DisplayName("Add actual return date for rental by id")
     void returnRental_ValidRentalId_ShouldReturnRentalResponseDto() throws Exception {
         //Given
@@ -121,7 +122,7 @@ public class RentalControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "manager", roles = {"MANAGER"})
+    @WithUserDetails("messi@gmail.com")
     @DisplayName("Search rental by params from database")
     void searchRentalByParams_ValidRentalParams_ShouldReturnListOfRentalResponseDto()
             throws Exception {

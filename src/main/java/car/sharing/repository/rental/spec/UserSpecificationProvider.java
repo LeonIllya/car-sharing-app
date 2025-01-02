@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserSpecificationProvider implements SpecificationProvider<Rental> {
-    private static final String USER_SPECIFICATION = "userId";
+    public static final String USER_SPECIFICATION = "userId";
 
     @Override
     public String getKey() {

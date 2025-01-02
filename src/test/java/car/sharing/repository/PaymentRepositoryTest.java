@@ -21,9 +21,17 @@ public class PaymentRepositoryTest {
     private PaymentRepository paymentRepository;
 
     @Test
-    @Sql(scripts = "classpath:database/payments/add-payments.sql",
+    @Sql(scripts = {
+            "classpath:database/cars/add-cars.sql",
+            "classpath:database/users/add-users.sql",
+            "classpath:database/rentals/add-rentals.sql",
+            "classpath:database/payments/add-payments.sql"},
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = "classpath:database/payments/remove-payments.sql",
+    @Sql(scripts = {
+            "classpath:database/payments/remove-payments.sql",
+            "classpath:database/rentals/remove-rentals.sql",
+            "classpath:database/users/remove-users.sql",
+            "classpath:database/cars/remove-cars.sql"},
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     @DisplayName("Find list payments by list rental ids")
     public void convertListRentalsId_intoListOfPayments() throws MalformedURLException {
@@ -32,7 +40,6 @@ public class PaymentRepositoryTest {
         payment.setId(1L);
         payment.setStatus(Payment.Status.PENDING);
         payment.setType(Payment.Type.PAYMENT);
-        payment.setRentalId(1L);
         payment.setSessionUrl(new URL("http://stripe1.url"));
         payment.setSessionId("sessionId1");
         payment.setTotalPrice(BigDecimal.valueOf(1000));
@@ -41,7 +48,6 @@ public class PaymentRepositoryTest {
         payment2.setId(2L);
         payment2.setStatus(Payment.Status.PENDING);
         payment2.setType(Payment.Type.PAYMENT);
-        payment2.setRentalId(2L);
         payment2.setSessionUrl(new URL("http://stripe2.url"));
         payment2.setSessionId("sessionId2");
         payment2.setTotalPrice(BigDecimal.valueOf(2000));

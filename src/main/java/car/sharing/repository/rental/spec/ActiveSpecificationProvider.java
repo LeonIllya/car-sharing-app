@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ActiveSpecificationProvider implements SpecificationProvider<Rental> {
-    private static final String RENTAL_IS_ACTIVE_SPECIFICATION = "isActive";
+    public static final String RENTAL_IS_ACTIVE_SPECIFICATION = "isActive";
 
     @Override
     public String getKey() {
