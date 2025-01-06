@@ -1,6 +1,7 @@
 package car.sharing.controller;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,7 +15,6 @@ import car.sharing.dto.user.UserResponseDto;
 import car.sharing.dto.user.UserResponseUpdateRole;
 import car.sharing.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,7 +69,7 @@ public class UserControllerTest {
         UserResponseDto userResponseDtoActual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), UserResponseDto.class);
         assertNotNull(userResponseDtoActual);
-        EqualsBuilder.reflectionEquals(userDtoExpected, userResponseDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(userDtoExpected, userResponseDtoActual, "id"));
     }
 
     @Test
@@ -78,10 +78,10 @@ public class UserControllerTest {
     void updateRoleForUser_ValidUpdateUserRole_ShouldReturnUserResponseUpdateRole()
             throws Exception {
         //Given
+        UserResponseUpdateRole updateRoleExpected = new UserResponseUpdateRole(4L,
+                "messi@gmail.com", "MANAGER", "Lionel", "Messi");
         UpdateUserRole userRole = createUserRole();
-
-        Set<Role> setOfRolesExpected = getSetOfRoles(userRole.userRole());
-        Long id = 3L;
+        Long id = 4L;
         String jsonRequest = objectMapper.writeValueAsString(userRole);
 
         //When
@@ -95,7 +95,8 @@ public class UserControllerTest {
                 .readValue(result.getResponse()
                         .getContentAsString(), UserResponseUpdateRole.class);
         assertNotNull(userResponseUpdateRole);
-        EqualsBuilder.reflectionEquals(setOfRolesExpected, userResponseUpdateRole.role(), "id");
+        assertTrue(EqualsBuilder.reflectionEquals(
+                updateRoleExpected, userResponseUpdateRole, "id"));
     }
 
     @Test
@@ -115,7 +116,8 @@ public class UserControllerTest {
         UserResponseDto userResponseDtoActual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), UserResponseDto.class);
         assertNotNull(userResponseDtoActual);
-        EqualsBuilder.reflectionEquals(userDtoExpected, userResponseDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(
+                userDtoExpected, userResponseDtoActual, "id"));
     }
 
     @Test
@@ -139,7 +141,8 @@ public class UserControllerTest {
         UserResponseDto userResponseDtoActual = objectMapper.readValue(
                 result.getResponse().getContentAsString(), UserResponseDto.class);
         assertNotNull(userResponseDtoActual);
-        EqualsBuilder.reflectionEquals(userDtoExpected, userResponseDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(
+                userDtoExpected, userResponseDtoActual, "id"));
     }
 
     private UserRegistrationRequestDto createUserRegistrationRequestDto() {
@@ -154,12 +157,6 @@ public class UserControllerTest {
 
     private UpdateUserRole createUserRole() {
         return new UpdateUserRole(Role.UserRole.MANAGER);
-    }
-
-    private Set<Role> getSetOfRoles(Role.UserRole userRole) {
-        Role role = new Role();
-        role.setUserRole(userRole);
-        return Set.of(role);
     }
 
     private UserResponseDto createUserDto() {

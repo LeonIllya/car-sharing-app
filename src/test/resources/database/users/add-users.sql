@@ -4,4 +4,4 @@ VALUES (3, 'eto@gmail.com', 'Samuel', 'Eto', '12345678910'),
 
 INSERT INTO users_roles (user_id, role_id)
 VALUES (3, 1),
-       (4, 1);
+       (4, 2);

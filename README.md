@@ -109,6 +109,16 @@ ___
 |     PUT     |    `/users/me `     |   ALL   |  Update user information   |
 ___
 
+## Structure of DB 📂
+
+### ER-diagram of database tables
+
+![ER-diagram](docs/drawSQL-image-export-2025-01-06.png)
+
+### Relations between entities
+- **Payment - Rental** : OneToOne
+- **Rental - Car** : OneToOne
+- **Rental - User** : ManyToOne
 ___
 ## 🌟 Challenges and Solutions
 

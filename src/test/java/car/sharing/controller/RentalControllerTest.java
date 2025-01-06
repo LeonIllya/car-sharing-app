@@ -1,6 +1,9 @@
 package car.sharing.controller;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -70,11 +74,12 @@ public class RentalControllerTest {
         RentalResponseDto rentalResponseDtoActual = objectMapper.readValue(result.getResponse()
                 .getContentAsString(), RentalResponseDto.class);
         assertNotNull(rentalResponseDtoActual);
-        EqualsBuilder.reflectionEquals(rentalResponseDtoExpected, rentalResponseDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(
+                rentalResponseDtoExpected, rentalResponseDtoActual, "id"));
     }
 
     @Test
-    @WithUserDetails("messi@gmail.com")
+    @WithMockUser(username = "manager", roles = {"MANAGER"})
     @DisplayName("Get a rental by id")
     void getRentalById_ValidRentalId_ShouldReturnRentalResponseDto() throws Exception {
         //Given
@@ -95,19 +100,14 @@ public class RentalControllerTest {
         RentalResponseDto rentalResponseDtoActual = objectMapper.readValue(result.getResponse()
                 .getContentAsString(), RentalResponseDto.class);
         assertNotNull(rentalResponseDtoActual);
-        EqualsBuilder.reflectionEquals(rentalResponseDtoExpected, rentalResponseDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(
+                rentalResponseDtoExpected, rentalResponseDtoActual, "id"));
     }
 
     @Test
-    @WithUserDetails("messi@gmail.com")
+    @WithMockUser(username = "manager", roles = {"MANAGER"})
     @DisplayName("Add actual return date for rental by id")
     void returnRental_ValidRentalId_ShouldReturnRentalResponseDto() throws Exception {
-        //Given
-        RentalResponseDto responseDtoExpected = new RentalResponseDto(1L,
-                LocalDate.of(2024, 12, 5),
-                LocalDate.of(2024, 12, 10),
-                LocalDate.of(2024, 12, 14), 1L);
-
         //When
         MvcResult result = mockMvc.perform(get("/rentals/{id}/return", EXISTING_RENTAL_ID_FROM_DB)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -117,12 +117,14 @@ public class RentalControllerTest {
         //Then
         RentalResponseDto rentalResponseDtoActual = objectMapper.readValue(result.getResponse()
                 .getContentAsString(), RentalResponseDto.class);
+
         assertNotNull(rentalResponseDtoActual);
-        EqualsBuilder.reflectionEquals(responseDtoExpected, rentalResponseDtoActual, "id");
+        assertEquals(EXISTING_RENTAL_ID_FROM_DB, rentalResponseDtoActual.id());
+        assertEquals(LocalDate.now(), rentalResponseDtoActual.actualReturnDate());
     }
 
     @Test
-    @WithUserDetails("messi@gmail.com")
+    @WithMockUser(username = "manager", roles = {"MANAGER"})
     @DisplayName("Search rental by params from database")
     void searchRentalByParams_ValidRentalParams_ShouldReturnListOfRentalResponseDto()
             throws Exception {
@@ -130,8 +132,8 @@ public class RentalControllerTest {
         List<RentalResponseDto> searchRentalsExpected = createListOfRentalResponseDto();
 
         //When
-        MvcResult result = mockMvc.perform(get("/rentals//search")
-                .param("userIds", "1L", "2L")
+        MvcResult result = mockMvc.perform(get("/rentals/search")
+                .param("user", "3", "4")
                 .param("isActive", "true")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -141,7 +143,7 @@ public class RentalControllerTest {
         RentalResponseDto[] searchRentalsActual = objectMapper.readValue(result.getResponse()
             .getContentAsString(), RentalResponseDto[].class);
         assertNotNull(searchRentalsActual);
-        EqualsBuilder.reflectionEquals(searchRentalsExpected, searchRentalsActual, "id");
+        assertArrayEquals(searchRentalsExpected.toArray(), searchRentalsActual);
     }
 
     private RentalRequestDto createRentalRequestDto() {
@@ -162,7 +164,7 @@ public class RentalControllerTest {
 
         RentalResponseDto responseDtoFromDB2 = new RentalResponseDto(2L,
                 LocalDate.of(2024, 12, 6),
-                LocalDate.of(2024, 12, 10),
+                LocalDate.of(2024, 12, 15),
                 null, 2L);
 
         return List.of(responseDtoFromDB1, responseDtoFromDB2);

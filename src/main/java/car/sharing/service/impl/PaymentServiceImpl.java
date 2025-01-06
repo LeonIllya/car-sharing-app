@@ -1,6 +1,7 @@
 package car.sharing.service.impl;
 
 import car.sharing.dto.payment.external.PaymentResponseDto;
+import car.sharing.dto.payment.external.PaymentResponseForTelegram;
 import car.sharing.dto.payment.internal.DescriptionForStripeDto;
 import car.sharing.dto.payment.internal.RequestPaymentToStripeDto;
 import car.sharing.exception.EntityNotFoundException;
@@ -12,7 +13,6 @@ import car.sharing.model.User;
 import car.sharing.repository.car.CarRepository;
 import car.sharing.repository.payment.PaymentRepository;
 import car.sharing.repository.rental.RentalRepository;
-import car.sharing.service.NotificationService;
 import car.sharing.service.PaymentService;
 import car.sharing.service.strategy.PaymentAmountService;
 import car.sharing.service.strategy.PaymentStrategy;
@@ -35,7 +35,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final RentalRepository rentalRepository;
     private final CarRepository carRepository;
     private final StripeService stripeService;
-    private final NotificationService notificationService;
     private final PaymentStrategy paymentStrategy;
 
     @Override
@@ -62,31 +61,21 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void successPayment(String sessionId) {
+    public PaymentResponseForTelegram successPayment(String sessionId) {
         Payment payment = getSessionById(sessionId);
-        Rental rental = payment.getRental();
-        User user = rental.getUser();
+        User user = payment.getRental().getUser();
         payment.setStatus(Payment.Status.PAID);
         paymentRepository.save(payment);
-        if (user.getTelegramId() != null) {
-            notificationService.sendNotification("Payment with session id {} "
-                    + " is successful." + sessionId, user.getTelegramId());
-        }
-        log.info("Payment with session id {} is successful.", sessionId);
+        return paymentMapper.toTelegramDto(user, sessionId);
     }
 
     @Override
-    public void cancelPayment(String sessionId) {
+    public PaymentResponseForTelegram cancelPayment(String sessionId) {
         Payment payment = getSessionById(sessionId);
-        Rental rental = payment.getRental();
-        User user = rental.getUser();
+        User user = payment.getRental().getUser();
         payment.setStatus(Payment.Status.CANCELED);
         paymentRepository.save(payment);
-        if (user.getTelegramId() != null) {
-            notificationService.sendNotification("Payment with session id {} "
-                    + " is canceled." + sessionId, user.getTelegramId());
-        }
-        log.info("Payment with session id {} is canceled.", sessionId);
+        return paymentMapper.toTelegramDto(user, sessionId);
     }
 
     private DescriptionForStripeDto createDescriptionForSession(

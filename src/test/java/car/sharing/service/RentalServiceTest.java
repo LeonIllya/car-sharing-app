@@ -91,21 +91,27 @@ public class RentalServiceTest {
     @DisplayName("Save new rentals and return its DTO")
     public void addRental_ValidRental_ShouldReturnRentalResponseDto() {
         // Given
+        RentalResponseDto responseDtoExpected = createRentalDto(rental);
+
         when(rentalMapper.toModel(requestDto)).thenReturn(rental);
-        when(rentalRepository.save(rental)).thenReturn(rental);
-        when(carRepository.save(car)).thenReturn(car);
-        when(carRepository.findById(1L)).thenReturn(Optional.of(car));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(carRepository.findById(1L)).thenReturn(Optional.of(car));
+        when(carRepository.save(car)).thenReturn(car);
+        when(rentalRepository.save(rental)).thenReturn(rental);
+        when(rentalMapper.toDto(rental)).thenReturn(responseDtoExpected);
 
         // When
-        RentalResponseDto responseDtoExpected = createRentalDto(rental);
         RentalResponseDto rentalActual = rentalService.createRental(requestDto, 1L);
 
         // Then
         Assertions.assertEquals(responseDtoExpected, rentalActual);
         Assertions.assertEquals(car.getInventory(), CAR_INVENTORY_EXPECT);
-        verify(rentalRepository, times(1)).save(rental);
+        verify(rentalMapper, times(1)).toModel(requestDto);
+        verify(userRepository, times(1)).findById(1L);
+        verify(carRepository, times(1)).findById(1L);
         verify(carRepository, times(1)).save(car);
+        verify(rentalRepository, times(1)).save(rental);
+        verify(rentalMapper, times(1)).toDto(rental);
     }
 
     @Test
@@ -134,6 +140,10 @@ public class RentalServiceTest {
 
         //Then
         Assertions.assertEquals(rentalResponseDtosActual, rentalResponseDtosExpected);
+        verify(specificationBuilder, times(2)).build(parametersDto);
+        verify(rentalRepository, times(1)).findAll(rentalSpecification);
+        verify(rentalMapper, times(1)).toDto(rental);
+        verify(rentalMapper, times(1)).toDto(rental1);
     }
 
     @Test
@@ -160,6 +170,10 @@ public class RentalServiceTest {
 
         //Then
         assertFalse(rentalResponseDtosActual.isEmpty());
+        verify(specificationBuilder, times(2)).build(parametersDto);
+        verify(rentalRepository, times(1)).findAll(rentalSpecification);
+        verify(rentalMapper, times(1)).toDto(rental);
+        verify(rentalMapper, times(1)).toDto(rental1);
     }
 
     @Test
@@ -177,6 +191,7 @@ public class RentalServiceTest {
         // Then
         Assertions.assertEquals(rentalDto, rentalByIdExpected);
         verify(rentalRepository, times(1)).findById(1L);
+        verify(rentalMapper, times(1)).toDto(rental);
     }
 
     @Test
@@ -206,19 +221,22 @@ public class RentalServiceTest {
         //Given
         rental.setActualReturnDate(LocalDate.now().plusDays(10));
         car.setInventory(CAR_INVENTORY_EXPECT);
+        RentalResponseDto rentalDtoExpected = createRentalDto(rental);
 
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
         when(carRepository.save(car)).thenReturn(car);
         when(rentalRepository.save(rental)).thenReturn(rental);
+        when(rentalMapper.toDto(rental)).thenReturn(rentalDtoExpected);
 
         //When
-        rentalService.actualReturnDate(1L);
+        RentalResponseDto rentalResponseDtoActual = rentalService.actualReturnDate(1L);
 
         //Then
-        Assertions.assertEquals(car.getInventory(), DEFAULT_CAR_INVENTORY);
-        Assertions.assertEquals(rental.isActive(), RENTAL_IS_FINISHED);
-        verify(rentalRepository,times(1)).findById(1L);
+        Assertions.assertEquals(rentalDtoExpected, rentalResponseDtoActual);
+        verify(rentalRepository, times(1)).findById(1L);
+        verify(carRepository, times(1)).save(car);
         verify(rentalRepository, times(1)).save(rental);
+        verify(rentalMapper, times(1)).toDto(rental);
     }
 
     @Test

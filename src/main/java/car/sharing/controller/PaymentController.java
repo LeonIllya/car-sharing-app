@@ -1,8 +1,10 @@
 package car.sharing.controller;
 
 import car.sharing.dto.payment.external.PaymentResponseDto;
+import car.sharing.dto.payment.external.PaymentResponseForTelegram;
 import car.sharing.dto.payment.internal.RequestPaymentToStripeDto;
 import car.sharing.model.User;
+import car.sharing.service.NotificationService;
 import car.sharing.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RequestMapping("/payments")
 public class PaymentController {
+    private final NotificationService notificationService;
     private final PaymentService paymentService;
 
     @GetMapping
@@ -49,7 +52,11 @@ public class PaymentController {
     @Operation(summary = "Stripe redirection for successful payments",
             description = "Check successful Stripe payments")
     public String checkSuccess(@NotBlank String sessionId) {
-        paymentService.successPayment(sessionId);
+        PaymentResponseForTelegram messageForTelegram = paymentService.successPayment(sessionId);
+        if (messageForTelegram.user().getTelegramId() != null) {
+            notificationService.sendNotification("Payment with session id {} "
+                    + " is successful." + sessionId, messageForTelegram.user().getTelegramId());
+        }
         return "Payment is successful";
     }
 
@@ -58,7 +65,11 @@ public class PaymentController {
     @Operation(summary = "Stripe redirection for canceled payments",
             description = "Return payment paused message")
     public String checkCancel(@NotBlank String sessionId) {
-        paymentService.cancelPayment(sessionId);
+        PaymentResponseForTelegram messageForTelegram = paymentService.cancelPayment(sessionId);
+        if (messageForTelegram.user().getTelegramId() != null) {
+            notificationService.sendNotification("Payment with session id {} "
+                    + " is canceled." + sessionId, messageForTelegram.user().getTelegramId());
+        }
         return "Payment is cancel";
     }
 }

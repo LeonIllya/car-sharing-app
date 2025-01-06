@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserSpecificationProvider implements SpecificationProvider<Rental> {
-    public static final String USER_SPECIFICATION = "userId";
+    public static final String USER_SPECIFICATION = "user";
 
     @Override
     public String getKey() {
@@ -16,7 +16,9 @@ public class UserSpecificationProvider implements SpecificationProvider<Rental> 
     }
 
     public Specification<Rental> getSpecification(Object[] params) {
-        return (root, query, criteriaBuilder) -> root.get(USER_SPECIFICATION)
-                .in(Arrays.stream(params).toArray());
+        return (root, query, criteriaBuilder) ->
+                root.get(USER_SPECIFICATION)
+                        .get("id")
+                        .in(Arrays.stream(params).toArray());
     }
 }

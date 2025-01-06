@@ -2,12 +2,12 @@ package car.sharing.service;
 
 import static car.sharing.model.Car.CarFrame.UNIVERSAL;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import car.sharing.dto.payment.external.PaymentResponseDto;
+import car.sharing.dto.payment.external.PaymentResponseForTelegram;
 import car.sharing.dto.payment.internal.DescriptionForStripeDto;
 import car.sharing.dto.payment.internal.RequestPaymentToStripeDto;
 import car.sharing.exception.EntityNotFoundException;
@@ -60,11 +60,10 @@ public class PaymentServiceTest {
     private PaymentAmountService paymentAmountService;
     @Mock
     private StripeService stripeService;
-    @Mock
-    private NotificationService notificationService;
     @InjectMocks
     private PaymentServiceImpl paymentService;
 
+    private User user;
     private Payment payment;
     private Payment payment2;
     private Rental rental;
@@ -73,9 +72,11 @@ public class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        User user = new User();
+        user = new User();
         user.setId(1L);
-        user.setTelegramId(1L);
+        user.setEmail("eto@gmail.com");
+        user.setFirstName("Samuel");
+        user.setLastName("Eto");
 
         car = new Car();
         car.setId(1L);
@@ -142,6 +143,7 @@ public class PaymentServiceTest {
         verify(rentalRepository, times(1)).findAllByUserId(userId);
         verify(paymentRepository, times(1))
                 .findAllByRentalsId(rentals.stream().map(Rental::getId).toList());
+        verify(paymentMapper, times(1)).toDto(payment);
     }
 
     @Test
@@ -161,6 +163,7 @@ public class PaymentServiceTest {
         payment.setId(null);
         payment.setSessionUrl(new URL("http://stripe.url"));
         payment.setTotalPrice(BigDecimal.valueOf(1000));
+        
         Long carId = 1L;
 
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
@@ -174,14 +177,18 @@ public class PaymentServiceTest {
         when(carRepository.findById(carId)).thenReturn(Optional.of(car));
 
         //When
+        PaymentResponseDto paymentDto = createPaymentDto(payment);
         RequestPaymentToStripeDto stripeDto = new RequestPaymentToStripeDto(
                 Payment.Type.PAYMENT, rental.getId());
-        PaymentResponseDto paymentDto = createPaymentDto(payment);
+
         PaymentResponseDto paymentSessionActual = paymentService.createPaymentSession(stripeDto);
 
         //Then
         Assertions.assertEquals(paymentDto, paymentSessionActual);
         verify(rentalRepository, times(1)).findById(1L);
+        verify(paymentStrategy, times(1)).getPaymentAmount(rental);
+        verify(paymentAmountService, times(1))
+                .calculateTotalAmountByRentalDays(rental.getCar().getDailyFee(), rental);
         verify(stripeService, times(1)).createStripeSession(descriptionForSession);
         verify(paymentRepository, times(1)).save(payment);
         verify(carRepository, times(2)).findById(carId);
@@ -191,18 +198,23 @@ public class PaymentServiceTest {
     @DisplayName("Confirm a payment")
     public void successPayment_ValidSessionId_Success() {
         //Given
+        PaymentResponseForTelegram paymentExpected = createPaymentForTelegram();
+
         when(paymentRepository.findBySessionId(DEFAULT_SESSION_ID))
                 .thenReturn(Optional.of(payment));
         when(paymentRepository.save(payment)).thenReturn(payment);
-        doNothing().when(notificationService).sendNotification(any(), any());
+        when(paymentMapper.toTelegramDto(user, DEFAULT_SESSION_ID)).thenReturn(paymentExpected);
 
         //When
-        paymentService.successPayment(DEFAULT_SESSION_ID);
+        PaymentResponseForTelegram paymentResponseActual = paymentService
+                .successPayment(DEFAULT_SESSION_ID);
 
         //Then
         Assertions.assertEquals(payment.getStatus(), Payment.Status.PAID);
+        Assertions.assertEquals(paymentExpected, paymentResponseActual);
         verify(paymentRepository, times(1)).findBySessionId(DEFAULT_SESSION_ID);
         verify(paymentRepository, times(1)).save(payment);
+        verify(paymentMapper, times(1)).toTelegramDto(user, DEFAULT_SESSION_ID);
     }
 
     @Test
@@ -228,18 +240,22 @@ public class PaymentServiceTest {
     @DisplayName("Cancel a payment")
     public void canselPayment_ValidSessionIdAndUserId_Success() {
         //Given
+        PaymentResponseForTelegram paymentExpected = createPaymentForTelegram();
+
         when(paymentRepository.findBySessionId(DEFAULT_SESSION_ID))
                 .thenReturn(Optional.of(payment));
         when(paymentRepository.save(payment)).thenReturn(payment);
-        doNothing().when(notificationService).sendNotification(any(), any());
-
+        when(paymentMapper.toTelegramDto(user, DEFAULT_SESSION_ID)).thenReturn(paymentExpected);
         //When
-        paymentService.cancelPayment(DEFAULT_SESSION_ID);
+        PaymentResponseForTelegram paymentResponseActual = paymentService.cancelPayment(
+                DEFAULT_SESSION_ID);
 
         //Then
         Assertions.assertEquals(payment.getStatus(), Payment.Status.CANCELED);
+        Assertions.assertEquals(paymentExpected, paymentResponseActual);
         verify(paymentRepository, times(1)).findBySessionId(DEFAULT_SESSION_ID);
         verify(paymentRepository, times(1)).save(payment);
+        verify(paymentMapper, times(1)).toTelegramDto(user, DEFAULT_SESSION_ID);
     }
 
     @Test
@@ -264,5 +280,9 @@ public class PaymentServiceTest {
     private PaymentResponseDto createPaymentDto(Payment payment) {
         return new PaymentResponseDto(payment.getId(), payment.getStatus(), payment.getType(),
                 payment.getSessionUrl(), payment.getSessionId(), payment.getTotalPrice());
+    }
+
+    private PaymentResponseForTelegram createPaymentForTelegram() {
+        return new PaymentResponseForTelegram(user, DEFAULT_SESSION_ID);
     }
 }

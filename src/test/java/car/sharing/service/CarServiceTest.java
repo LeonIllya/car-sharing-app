@@ -78,7 +78,9 @@ public class CarServiceTest {
 
         // Then
         Assertions.assertEquals(carDtoResponse, carDtoActual);
+        verify(carMapper, times(1)).toModel(requestDto);
         verify(carRepository, times(1)).save(car);
+        verify(carMapper, times(1)).toDto(car);
     }
 
     @Test
@@ -104,6 +106,7 @@ public class CarServiceTest {
         Assertions.assertEquals(carDtoResponse, carDtoActual);
         verify(carRepository, times(1)).findById(1L);
         verify(carRepository, times(1)).save(car);
+        verify(carMapper, times(1)).toDto(car);
     }
 
     @Test
@@ -133,8 +136,11 @@ public class CarServiceTest {
     @Test
     @DisplayName("Delete car by ID")
     public void deleteCarById_ValidId_Success() {
+        // Given
+        Long carId = 1L;
+
         // When
-        carService.deleteCarById(1L);
+        carService.deleteCarById(carId);
 
         // Then
         verify(carRepository, times(1)).deleteById(1L);
@@ -155,6 +161,7 @@ public class CarServiceTest {
         // Then
         Assertions.assertEquals(carDtoResponse, carDtoExpected);
         verify(carRepository, times(1)).findById(1L);
+        verify(carMapper, times(1)).toDto(car);
     }
 
     @Test
@@ -200,6 +207,9 @@ public class CarServiceTest {
         Assertions.assertEquals(2, expectedCars.size());
         Assertions.assertEquals(carDtoResponse, expectedCars.get(0));
         Assertions.assertEquals(carDtoResponse2, expectedCars.get(1));
+        verify(carRepository, times(1)).findAll(defaultPageable);
+        verify(carMapper, times(1)).toDto(car);
+        verify(carMapper, times(1)).toDto(car2);
     }
 
     @Test
@@ -228,6 +238,10 @@ public class CarServiceTest {
 
         // Then
         Assertions.assertEquals(carDtoExpected, carDtoActual);
+        verify(specificationBuilder, times(2)).build(parametersDto);
+        verify(carRepository, times(1)).findAll(carSpecification);
+        verify(carMapper, times(1)).toDto(car);
+        verify(carMapper, times(1)).toDto(car2);
     }
 
     @Test
@@ -254,6 +268,10 @@ public class CarServiceTest {
 
         //Then
         assertFalse(carDtoActual.isEmpty());
+        verify(specificationBuilder, times(2)).build(parametersDto);
+        verify(carRepository, times(1)).findAll(carSpecification);
+        verify(carMapper, times(1)).toDto(car);
+        verify(carMapper, times(1)).toDto(car2);
     }
 
     private Car createCar() {

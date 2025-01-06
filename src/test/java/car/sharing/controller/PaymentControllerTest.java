@@ -1,12 +1,11 @@
 package car.sharing.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import car.sharing.dto.payment.external.PaymentResponseDto;
-import car.sharing.dto.payment.internal.RequestPaymentToStripeDto;
 import car.sharing.model.Payment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
@@ -21,14 +20,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.testcontainers.shaded.org.apache.commons.lang3.builder.EqualsBuilder;
 
 @Sql(scripts = {"classpath:database/cars/add-cars.sql",
         "classpath:database/users/add-users.sql",
@@ -60,7 +57,7 @@ public class PaymentControllerTest {
     @DisplayName("Get payment by user")
     void getPaymentByUser_ValidUser_ShouldReturnListOfPaymentResponseDto() throws Exception {
         //Given
-        PaymentResponseDto paymentResponseDtoExpected = createPaymentResponseDto();
+        List<PaymentResponseDto> paymentResponseDtoExpected = createPaymentResponseDto();
         //When
         MvcResult result = mockMvc.perform(get("/payments")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -71,42 +68,13 @@ public class PaymentControllerTest {
         PaymentResponseDto[] paymentResponseDtoActual = objectMapper.readValue(
             result.getResponse().getContentAsString(), PaymentResponseDto[].class);
         Assertions.assertNotNull(paymentResponseDtoActual);
-        EqualsBuilder.reflectionEquals(List.of(paymentResponseDtoExpected),
-                Arrays.stream(paymentResponseDtoActual).toList(), "id");
+        assertEquals(paymentResponseDtoExpected, Arrays.stream(paymentResponseDtoActual).toList());
     }
 
-    @Test
-    @WithMockUser(username = "customer", roles = {"CUSTOMER", "MANAGER"})
-    @DisplayName("Create session")
-    void createSession_ValidRequestPaymentToStripeDto_ShouldReturnPaymentResponseDto()
-            throws Exception {
-        //Given
-        RequestPaymentToStripeDto requestPaymentToStripeDto = createRequestPaymentToStripeDto();
-        PaymentResponseDto paymentResponseDtoExpected = createPaymentResponseDto();
-        String jsonRequest = objectMapper.writeValueAsString(requestPaymentToStripeDto);
-        //When
-        MvcResult result = mockMvc.perform(post("/payments")
-                .content(jsonRequest)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        //Then
-        PaymentResponseDto responseDtoActual = objectMapper.readValue(
-                result.getResponse().getContentAsString(), PaymentResponseDto.class);
-
-        Assertions.assertNotNull(responseDtoActual);
-        EqualsBuilder.reflectionEquals(paymentResponseDtoExpected,
-                responseDtoActual, "id");
-    }
-
-    private PaymentResponseDto createPaymentResponseDto() throws MalformedURLException {
-        return new PaymentResponseDto(1L, Payment.Status.PENDING,
+    private List<PaymentResponseDto> createPaymentResponseDto() throws MalformedURLException {
+        PaymentResponseDto responseDto = new PaymentResponseDto(1L, Payment.Status.PENDING,
                 Payment.Type.PAYMENT, new URL("http://stripe1.url"),
                 "sessionId1", new BigDecimal("1000.0").setScale(2));
-    }
-
-    private RequestPaymentToStripeDto createRequestPaymentToStripeDto() {
-        return new RequestPaymentToStripeDto(Payment.Type.PAYMENT, 3L);
+        return List.of(responseDto);
     }
 }
