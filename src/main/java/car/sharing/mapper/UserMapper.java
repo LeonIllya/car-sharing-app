@@ -6,6 +6,7 @@ import car.sharing.dto.user.UserResponseDto;
 import car.sharing.dto.user.UserResponseUpdateRole;
 import car.sharing.model.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(config = MapperConfig.class)
 public interface UserMapper {
@@ -13,5 +14,6 @@ public interface UserMapper {
 
     User toModel(UserRegistrationRequestDto requestDto);
 
+    @Mapping(target = "role", source = "user.roles")
     UserResponseUpdateRole toUpdateRole(User user);
 }

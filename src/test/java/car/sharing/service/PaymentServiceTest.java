@@ -20,9 +20,10 @@ import car.sharing.model.User;
 import car.sharing.repository.car.CarRepository;
 import car.sharing.repository.payment.PaymentRepository;
 import car.sharing.repository.rental.RentalRepository;
-import car.sharing.repository.user.UserRepository;
 import car.sharing.service.impl.PaymentServiceImpl;
 import car.sharing.service.impl.StripeService;
+import car.sharing.service.strategy.PaymentAmountService;
+import car.sharing.service.strategy.PaymentStrategy;
 import com.stripe.model.checkout.Session;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -54,7 +55,9 @@ public class PaymentServiceTest {
     @Mock
     private CarRepository carRepository;
     @Mock
-    private UserRepository userRepository;
+    private PaymentStrategy paymentStrategy;
+    @Mock
+    private PaymentAmountService paymentAmountService;
     @Mock
     private StripeService stripeService;
     @Mock
@@ -68,11 +71,9 @@ public class PaymentServiceTest {
     private Rental rental2;
     private Car car;
 
-    private User user;
-
     @BeforeEach
     void setUp() {
-        user = new User();
+        User user = new User();
         user.setId(1L);
         user.setTelegramId(1L);
 
@@ -89,22 +90,22 @@ public class PaymentServiceTest {
         rental.setRentalDate(LocalDate.now());
         rental.setReturnDate(LocalDate.now().plusDays(10));
         rental.setActualReturnDate(LocalDate.now().plusDays(10));
-        rental.setCarId(car.getId());
-        rental.setUserId(1L);
+        rental.setCar(car);
+        rental.setUser(user);
 
         rental2 = new Rental();
         rental2.setId(2L);
         rental2.setRentalDate(LocalDate.now());
         rental2.setReturnDate(LocalDate.now().plusDays(10));
         rental2.setActualReturnDate(LocalDate.now().plusDays(12));
-        rental2.setCarId(car.getId());
-        rental2.setUserId(1L);
+        rental.setCar(car);
+        rental.setUser(user);
 
         payment = new Payment();
         payment.setId(1L);
         payment.setStatus(Payment.Status.PENDING);
         payment.setType(Payment.Type.PAYMENT);
-        payment.setRentalId(1L);
+        payment.setRental(rental);
         payment.setSessionId("sessionId");
         payment.setTotalPrice(BigDecimal.valueOf(100));
 
@@ -112,7 +113,7 @@ public class PaymentServiceTest {
         payment2.setId(2L);
         payment2.setStatus(Payment.Status.PENDING);
         payment2.setType(Payment.Type.PAYMENT);
-        payment2.setRentalId(1L);
+        payment2.setRental(rental2);
         payment2.setSessionId("sessionId2");
         payment2.setTotalPrice(BigDecimal.valueOf(500));
     }
@@ -163,6 +164,10 @@ public class PaymentServiceTest {
         Long carId = 1L;
 
         when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
+        when(paymentStrategy.getPaymentAmount(rental)).thenReturn(paymentAmountService);
+        when(paymentAmountService.calculateTotalAmountByRentalDays(
+            rental.getCar().getDailyFee(), rental))
+                .thenReturn(BigDecimal.valueOf(1000));
         when(stripeService.createStripeSession(descriptionForSession))
                 .thenReturn(stripeSession);
         when(paymentRepository.save(payment)).thenReturn(payment);
@@ -179,7 +184,7 @@ public class PaymentServiceTest {
         verify(rentalRepository, times(1)).findById(1L);
         verify(stripeService, times(1)).createStripeSession(descriptionForSession);
         verify(paymentRepository, times(1)).save(payment);
-        verify(carRepository, times(3)).findById(carId);
+        verify(carRepository, times(2)).findById(carId);
     }
 
     @Test
@@ -188,8 +193,6 @@ public class PaymentServiceTest {
         //Given
         when(paymentRepository.findBySessionId(DEFAULT_SESSION_ID))
                 .thenReturn(Optional.of(payment));
-        when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(paymentRepository.save(payment)).thenReturn(payment);
         doNothing().when(notificationService).sendNotification(any(), any());
 
@@ -227,8 +230,6 @@ public class PaymentServiceTest {
         //Given
         when(paymentRepository.findBySessionId(DEFAULT_SESSION_ID))
                 .thenReturn(Optional.of(payment));
-        when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(paymentRepository.save(payment)).thenReturn(payment);
         doNothing().when(notificationService).sendNotification(any(), any());
 

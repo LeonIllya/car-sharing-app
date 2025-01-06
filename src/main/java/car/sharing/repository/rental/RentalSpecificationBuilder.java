@@ -1,5 +1,8 @@
 package car.sharing.repository.rental;
 
+import static car.sharing.repository.rental.spec.ActiveSpecificationProvider.RENTAL_IS_ACTIVE_SPECIFICATION;
+import static car.sharing.repository.rental.spec.UserSpecificationProvider.USER_SPECIFICATION;
+
 import car.sharing.dto.rental.RentalSearchParametersDto;
 import car.sharing.model.Rental;
 import car.sharing.repository.SpecificationBuilder;
@@ -12,8 +15,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class RentalSpecificationBuilder implements SpecificationBuilder<Rental,
         RentalSearchParametersDto> {
-    private static final String USER_SPECIFICATION = "userId";
-    private static final String RENTAL_IS_ACTIVE_SPECIFICATION = "isActive";
     private final SpecificationProviderManager<Rental> rentalSpecificationProviderManager;
 
     @Override

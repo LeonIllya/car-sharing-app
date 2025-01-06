@@ -12,14 +12,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class StripeService {
-    private static final String SUCCESS_URL = "http://localhost:8080/payments/success?sessionId={CHECKOUT_SESSION_ID}";
-    private static final String CANCEL_URL = "http://localhost:8080/payments/cancel?sessionId={CHECKOUT_SESSION_ID}";
     private static final Long DEFAULT_QUANTITY = 1L;
     private static final String DEFAULT_CURRENCY = "USD";
     private static final BigDecimal CENTS_AMOUNT = BigDecimal.valueOf(100);
 
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
+    @Value("${stripe.success.url}")
+    private String successUrl;
+    @Value("${stripe.cancel.url}")
+    private String cancelUrl;
 
     @PostConstruct
     public void init() {
@@ -30,31 +32,35 @@ public class StripeService {
         try {
             SessionCreateParams params = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
-                    .setSuccessUrl(SUCCESS_URL)
-                    .setCancelUrl(CANCEL_URL)
-                    .addLineItem(
-                        SessionCreateParams.LineItem.builder()
-                            .setQuantity(DEFAULT_QUANTITY)
-                            .setPriceData(SessionCreateParams.LineItem.PriceData
-                                .builder()
-                                .setCurrency(DEFAULT_CURRENCY)
-                                .setUnitAmountDecimal(
-                                    stripeDto.getTotalAmount().multiply(CENTS_AMOUNT)
-                                )
-                                .setProductData(
-                                    SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                        .setName(stripeDto.getName())
-                                        .setDescription(stripeDto.getDescription())
-                                        .build()
-                                )
-                                .build()
-                            )
-                            .build()
-                    )
+                    .setSuccessUrl(successUrl)
+                    .setCancelUrl(cancelUrl)
+                    .addLineItem(getLineItem(stripeDto))
                     .build();
             return Session.create(params);
         } catch (RuntimeException | StripeException e) {
             throw new RuntimeException("Can`t create a session: " + e);
         }
+    }
+
+    private SessionCreateParams.LineItem getLineItem(DescriptionForStripeDto stripeDto) {
+        return SessionCreateParams.LineItem.builder()
+                .setQuantity(DEFAULT_QUANTITY)
+                .setPriceData(SessionCreateParams.LineItem.PriceData
+                    .builder()
+                    .setCurrency(DEFAULT_CURRENCY)
+                    .setUnitAmountDecimal(convertToCents(stripeDto))
+                    .setProductData(
+                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                            .setName(stripeDto.getName())
+                            .setDescription(stripeDto.getDescription())
+                            .build()
+                    )
+                    .build()
+                )
+                .build();
+    }
+
+    private BigDecimal convertToCents(DescriptionForStripeDto stripeDto) {
+        return stripeDto.getTotalAmount().multiply(CENTS_AMOUNT);
     }
 }
