@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
@@ -15,8 +16,6 @@ import java.net.URL;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -38,7 +37,7 @@ public class Payment {
     @Column(nullable = false, columnDefinition = "varchar")
     private Type type;
     @OneToOne(fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
+    @JoinColumn(name = "rental_id", nullable = false)
     private Rental rental;
     @Column(nullable = false)
     private URL sessionUrl;

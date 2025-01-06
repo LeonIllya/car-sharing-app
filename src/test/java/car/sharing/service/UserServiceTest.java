@@ -1,5 +1,6 @@
 package car.sharing.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -8,6 +9,7 @@ import car.sharing.dto.user.UpdateUserRole;
 import car.sharing.dto.user.UserRegistrationRequestDto;
 import car.sharing.dto.user.UserRequestDto;
 import car.sharing.dto.user.UserResponseDto;
+import car.sharing.dto.user.UserResponseUpdateRole;
 import car.sharing.exception.EntityNotFoundException;
 import car.sharing.exception.RegistrationException;
 import car.sharing.mapper.UserMapper;
@@ -89,8 +91,10 @@ public class UserServiceTest {
         UserResponseDto result = userService.register(requestDto);
 
         // Then
-        Assertions.assertEquals(responseDto, result);
+        assertEquals(responseDto, result);
         verify(userRepository, times(1)).existsByEmail(requestDto.getEmail());
+        verify(userMapper, times(1)).toModel(requestDto);
+        verify(roleRepository, times(1)).getByUserRole(Role.UserRole.CUSTOMER);
         verify(userRepository, times(1)).save(user);
         verify(userMapper, times(1)).toDto(user);
     }
@@ -110,7 +114,7 @@ public class UserServiceTest {
         //Then
         String expected = "This email is already registered: " + requestDto.getEmail();
         String actual = exception.getMessage();
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
         verify(userRepository, times(1)).existsByEmail(requestDto.getEmail());
     }
 
@@ -121,20 +125,24 @@ public class UserServiceTest {
         UpdateUserRole userRole = new UpdateUserRole(Role.UserRole.CUSTOMER);
         Role role1 = new Role();
         role1.setUserRole(Role.UserRole.MANAGER);
+        UserResponseUpdateRole updateRoleExpected = new UserResponseUpdateRole(1L,
+                "admin1@gmail.com","MANAGER","Danil", "Zinchenko");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(roleRepository.findByUserRole(userRole.userRole()))
                 .thenReturn(Set.of(role1));
         when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toUpdateRole(user)).thenReturn(updateRoleExpected);
 
         // When
-        userService.updateRoleForUser(userRole, 1L);
+        UserResponseUpdateRole updateRoleActual = userService.updateRoleForUser(userRole, 1L);
 
         // Then
-        Assertions.assertEquals(Set.of(role1), user.getRoles());
+        assertEquals(updateRoleExpected, updateRoleActual);
         verify(userRepository, times(1)).findById(user.getId());
         verify(roleRepository, times(1)).findByUserRole(userRole.userRole());
         verify(userRepository, times(1)).save(user);
+        verify(userMapper, times(2)).toUpdateRole(user);
     }
 
     @Test
@@ -150,7 +158,7 @@ public class UserServiceTest {
         UserResponseDto userInfoExpected = userService.getUserInfo(user);
 
         // Then
-        Assertions.assertEquals(responseDto, userInfoExpected);
+        assertEquals(responseDto, userInfoExpected);
         verify(userMapper, times(1)).toDto(user);
     }
 
@@ -159,18 +167,22 @@ public class UserServiceTest {
     public void updateUserInfo_ValidUser_Success() {
         // Given
         UserRequestDto userRequestDto = new UserRequestDto("Andrey", "Zub");
+        UserResponseDto responseDtoExpected = new UserResponseDto(user.getId(), user.getEmail(),
+                "Andrey", "Zub");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toDto(user)).thenReturn(responseDtoExpected);
 
         //When
-        userService.updateUserInfo(userRequestDto, user.getId());
+        UserResponseDto responseDtoActual = userService.updateUserInfo(
+                userRequestDto, user.getId());
 
         //Then
-        Assertions.assertEquals(userRequestDto.firstName(), user.getFirstName());
-        Assertions.assertEquals(userRequestDto.lastName(), user.getLastName());
+        assertEquals(responseDtoExpected, responseDtoActual);
         verify(userRepository, times(1)).findById(user.getId());
         verify(userRepository, times(1)).save(user);
+        verify(userMapper, times(1)).toDto(user);
     }
 
     @Test
@@ -191,7 +203,7 @@ public class UserServiceTest {
         //Then
         String expected = "Can`t find user by id: " + userId;
         String actual = exception.getMessage();
-        Assertions.assertEquals(expected, actual);
+        assertEquals(expected, actual);
         verify(userRepository, times(1)).findById(100L);
     }
 }

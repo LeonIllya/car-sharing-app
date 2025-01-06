@@ -1,7 +1,8 @@
 package car.sharing.controller;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,7 +72,7 @@ public class CarControllerTest {
         CarDto carDtoActual = objectMapper.readValue(result.getResponse()
                 .getContentAsString(), CarDto.class);
         assertNotNull(carDtoActual);
-        EqualsBuilder.reflectionEquals(carDtoExpected, carDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(carDtoExpected, carDtoActual, "id"));
     }
 
     @Test
@@ -94,7 +95,7 @@ public class CarControllerTest {
         CarDto carDtoActual = objectMapper.readValue(mvcResult.getResponse()
                 .getContentAsString(), CarDto.class);
         assertNotNull(carDtoActual);
-        EqualsBuilder.reflectionEquals(carDtoExpected, carDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(carDtoExpected, carDtoActual, "id"));
     }
 
     @Test
@@ -150,7 +151,7 @@ public class CarControllerTest {
         CarDto carDtoActual = objectMapper.readValue(result.getResponse()
                 .getContentAsString(), CarDto.class);
         assertNotNull(carDtoActual);
-        EqualsBuilder.reflectionEquals(carDtoExpected, carDtoActual, "id");
+        assertTrue(EqualsBuilder.reflectionEquals(carDtoExpected, carDtoActual, "id"));
     }
 
     @Test

@@ -3,6 +3,7 @@ package car.sharing.repository.payment;
 import car.sharing.model.Payment;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,5 +14,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT p FROM Payment p JOIN p.rental r WHERE r.id IN :rentalIds")
     List<Payment> findAllByRentalsId(@Param("rentalIds") List<Long> rentalIds);
 
+    @EntityGraph(attributePaths = {"rental", "rental.user"})
     Optional<Payment> findBySessionId(String sessionId);
 }

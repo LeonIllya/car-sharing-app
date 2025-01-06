@@ -45,11 +45,13 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
+    @Transactional
     public void deleteCarById(Long id) {
         carRepository.deleteById(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CarDto findCarById(Long carId) {
         Car car = carRepository.findById(carId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -58,6 +60,7 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CarDto> findAllCars(Pageable pageable) {
         return carRepository.findAll(pageable)
                 .stream()
@@ -66,6 +69,7 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CarDto> search(CarSearchParametersDto params) {
         Specification<Car> carSpecification = specificationBuilder.build(params);
         return carRepository.findAll(carSpecification)

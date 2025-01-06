@@ -43,6 +43,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RentalResponseDto> search(RentalSearchParametersDto params) {
         Specification<Rental> rentalSpecification = specificationBuilder.build(params);
         return rentalRepository.findAll(rentalSpecification)
@@ -52,11 +53,13 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RentalResponseDto getRental(Long rentalId) {
         return rentalMapper.toDto(getRentalById(rentalId));
     }
 
     @Override
+    @Transactional
     public RentalResponseDto actualReturnDate(Long rentalId) {
         Rental rental = getRentalById(rentalId);
         rental.setActualReturnDate(LocalDate.now());

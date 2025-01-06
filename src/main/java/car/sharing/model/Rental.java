@@ -14,8 +14,6 @@ import java.time.LocalDate;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -37,11 +35,9 @@ public class Rental {
     private LocalDate actualReturnDate;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id", nullable = false)
-    @Fetch(FetchMode.JOIN)
     private Car car;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @Fetch(FetchMode.JOIN)
     private User user;
     @Column(nullable = false, columnDefinition = "TINYINT")
     private boolean isActive = true;
